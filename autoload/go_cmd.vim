@@ -1,9 +1,9 @@
 function go_cmd#complete(lead, line, pos) abort
-    let subcmd = a:line->strpart(0, a:pos - len(a:lead))->matchstr(
+    let subcmd = matchstr(strpart(a:line, 0, a:pos - len(a:lead)),
         \ '\v\u\w*[! ] *(mod|tool)? *\zs<\w[[:alnum:]-]*>\ze')
 
     if has_key(s:subcmds, subcmd)
-        return s:subcmd_complete(s:subcmds[subcmd]..' ')
+        return s:subcmd_complete(s:subcmds[subcmd].' ')
     elseif subcmd == 'tool'
         return s:subcmd_complete(system('go tool'))
     elseif subcmd =~# 'get\|install'
@@ -19,33 +19,33 @@ endfunction
 
 function s:go_mod_complete(lead) abort
     if !exists('s:pkg_mod_path')
-        let s:pkg_mod_path = system('go env GOPATH')->trim("\n", 2)..'/pkg/mod/'
+        let s:pkg_mod_path = trim(system('go env GOPATH'), "\n", 2).'/pkg/mod/'
     endif
 
-    let paths = globpath(s:pkg_mod_path, a:lead..'*', 0, 1)
+    let paths = globpath(s:pkg_mod_path, a:lead.'*', 0, 1)
 
     " show only directories
     call filter(paths, {_, p -> isdirectory(p) && p !~# '^cache\>'})
 
     " remove path prefix, and add / suffix for parent directories w/o @version
-    call map(paths, {_, p -> p[len(s:pkg_mod_path):]..(p !~ '@'? '/': '')})
+    call map(paths, {_, p -> p[len(s:pkg_mod_path):].(p !~ '@'? '/': '')})
 
-    return paths->join("\n")
+    return join(paths, "\n")
 endfunction
 
 function s:go_file_complete(lead) abort
-    let paths = glob(a:lead..'*', 0, 1)
+    let paths = glob(a:lead.'*', 0, 1)
 
     " add / suffix to directories
-    call map(paths, {_, p -> p !~ '/$' && isdirectory(p)? p..'/': p})
+    call map(paths, {_, p -> p !~ '/$' && isdirectory(p)? p.'/': p})
 
     " filter *.go files; directories are always allowed
     call filter(paths, {_, p -> p =~# '\v\.go$|/$'})
 
     " https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns
-    call insert(paths, fnamemodify(a:lead, ':h')..'/...')
+    call insert(paths, fnamemodify(a:lead, ':h') . '/...')
 
-    return paths->join("\n")
+    return join(paths, "\n")
 endfunction
 
 let s:subcmds = {
@@ -54,4 +54,4 @@ let s:subcmds = {
     \ 'mod': 'download edit graph init tidy vendor verify why',
     \ 'work': 'edit init sync use',
 \ }
-let s:subcmds['help'] ..= ' ' .. s:subcmds['']
+let s:subcmds['help'] .= ' ' . s:subcmds['']
