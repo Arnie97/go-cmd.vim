@@ -3,10 +3,11 @@ set cpo&vim
 
 if has('patch-7.4.2044')
     command! -nargs=* -bang -bar -complete=custom,go_cmd#complete
-        \ Go call asyncrun#run(<q-bang>, '', 'go '.<q-args>)
+        \ Go call asyncrun#run(<q-bang>, {},
+            \ 'go '.join(map([<f-args>], {_, p -> expand(p)})))
 else
     command! -nargs=* -bang -bar -complete=file
-        \ Go call asyncrun#run(<q-bang>, '', 'go '.<q-args>)
+        \ Go call asyncrun#run(<q-bang>, {}, 'go '.<q-args>)
 endif
 
 if !exists('g:go_cmd_formatter_on_save')
