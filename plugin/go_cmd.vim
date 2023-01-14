@@ -9,6 +9,22 @@ else
         \ Go call asyncrun#run(<q-bang>, '', 'go '.<q-args>)
 endif
 
+if !exists('g:go_cmd_formatter_on_save')
+    if executable('goimports')
+        let g:go_cmd_formatter_on_save = '!goimports -w "%"'
+    elseif executable('gofmt')
+        let g:go_cmd_formatter_on_save = '!gofmt -w "%"'
+    elseif executable('go')
+        let g:go_cmd_formatter_on_save = '!go fmt "%"'
+    else
+        let g:go_cmd_formatter_on_save = ''
+    endif
+endif
+
+if len(g:go_cmd_formatter_on_save)
+    autocmd BufWritePost *.go silent execute g:go_cmd_formatter_on_save | edit
+endif
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
 
