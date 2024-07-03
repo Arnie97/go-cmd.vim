@@ -1,7 +1,11 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-if has('patch-7.4.2044')
+if has('patch-8.1.1510')
+    command! -nargs=* -bang -bar -complete=custom,go_cmd#complete
+        \ Go call asyncrun#run(<q-bang>, {},
+            \ 'go '.join(map([<f-args>], {_, p -> expandcmd(p)})))
+elseif has('patch-7.4.2044')
     command! -nargs=* -bang -bar -complete=custom,go_cmd#complete
         \ Go call asyncrun#run(<q-bang>, {},
             \ 'go '.join(map([<f-args>], {_, p -> expand(p)})))
